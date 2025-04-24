@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Admin</title>
+</head>
+<body>
+    <header>
+        <h1>Add a product</h1>
+        <div> 
+            <!-- a little cancel button at the top right to close the upload -->  
+            <form>
+                <div class="imageUpload">
+                    <div id="dropBox" class="dropZone">
+                        <input type="file" name="imageInput" id="imageInput" multiple hidden>
+                        <p>Drap and drop or Choose File</p>
+                        <p>JPEG, PNG, JPG</p>
+                    </div>
+                    <div id="preview">
+                        <img id="image-preview" width="100px" height="100px">
+                        <p id="image-name"></p>
+                        <p>cancel</p>
+                    </div>
+                </div>
+
+                <div class="productDetail">
+                    <label for="name">
+                        Name:
+                        <input type="text" placeholder="product name..." id="name">
+                    </label> <br>
+
+                    <label for="description">
+                        Description:
+                        <input type="text" placeholder="product description..." id="description">
+                    </label><br>
+
+                    <label for="price">
+                        Price:
+                        <input type="text" id="price" placeholder="10000">
+                    </label><br>
+                    
+                    <label for="quantity">
+                        Quantity:
+                        <input type="number" value="10" min="0" id="quantity">
+                    </label><br>
+
+                    <label for="category">
+                        Category:
+                        <input type="text" placeholder="product category..." id="category">
+                    </label><br> 
+            </div>
+            <button type="reset">Cancel</button>
+            <button type="submit" id="submit" onclick=addProduct(event)>Upload Product</button>
+            
+        </form>
+           
+            
+        </div>
+    </header>
+</body>
+<script src="./dashboard.js" ></script>
+</html>
