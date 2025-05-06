@@ -5,6 +5,7 @@ import AddProductPage from './pages/AddProductPage';
 import Dashboard from './pages/dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header.jsx';
+import ProductPage from './pages/ProductPage'
 import { ToastContainer } from 'react-toastify';
 
 function App() {
@@ -29,6 +30,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path='/products' element={
+          <ProtectedRoute>
+            <ProductPage />
+          </ProtectedRoute>
+        } />
       </Routes>
       <ToastContainer />
     </Router>

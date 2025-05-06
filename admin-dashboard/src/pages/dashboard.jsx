@@ -15,39 +15,63 @@ import { useNavigate } from 'react-router-dom';
 const Dashboard = () => {
   const [recentProducts, setRecentProducts] = useState([]);
   const [lowStockProducts, setLowStockProducts] = useState([]);
+  const [totalStocks, setTotalStocks] = useState(0);
+  const [loading, setLoading] = useState(true); // Add loading state
+
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await fetch('http://localhost:5000/api/v1/products/all', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
+  const fetchTotalStock = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/v1/products/stocks');
 
-        if (!res.ok) {
-          throw new Error('Failed to fetch products');
-        }
-
-        const data = await res.json();
-
-        // Sort products by createdAt or updatedAt (descending order)
-        const sortedProducts = data.products.sort(
-          (a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
-        );
-
-        // Get the most recent 5 products
-        setRecentProducts(sortedProducts.slice(0, 5));
-
-        // Filter products with stock < 5 for inventory warnings
-        setLowStockProducts(sortedProducts.filter((product) => product.quantity < 5));
-      } catch (error) {
-        console.error('Error fetching products:', error.message);
+      if (!res.ok) {
+        throw Error('Something went wrong, please try again!');
       }
-    };
 
+      const data = await res.json();
+      if (!data.success) {
+        throw Error(data.msg || 'Something went wrong, please try again!');
+      }
+      setTotalStocks(data.totalQuantity);
+    } catch (error) {
+      console.error(error.msg || 'Something went wrong, please try again later');
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/api/v1/products/all', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch products');
+      }
+
+      const data = await res.json();
+
+      // Sort products by createdAt or updatedAt (descending order)
+      const sortedProducts = data.products.sort(
+        (a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
+      );
+
+      // Get the most recent 5 products
+      setRecentProducts(sortedProducts.slice(0, 5));
+
+      // Filter products with stock < 5 for inventory warnings
+      setLowStockProducts(sortedProducts.filter((product) => product.quantity < 5));
+    } catch (error) {
+      console.error('Error fetching products:', error.message);
+    } finally {
+      setLoading(false); // Stop loading animation
+    }
+  };
+
+  useEffect(() => {
+    fetchTotalStock();
     fetchProducts();
   }, []);
 
@@ -80,7 +104,7 @@ const Dashboard = () => {
         <Grid item xs={12} sm={6} md={3}>
           <SummaryCard
             title="Total Products"
-            value={recentProducts.length}
+            value={totalStocks}
             icon={<InventoryIcon />}
             color="#1976d2"
           />
@@ -126,7 +150,7 @@ const Dashboard = () => {
           View All Products
         </Button>
       </Box>
-      <RecentProducts products={recentProducts} onProductClick={handleProductClick} />
+      <RecentProducts products={recentProducts} onProductClick={handleProductClick} loading={loading} />
 
       {/* Inventory Warnings Section */}
       <InventoryWarnings

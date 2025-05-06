@@ -11,6 +11,7 @@ import {
   Typography,
   Box,
 } from '@mui/material';
+import formatPrice from '../utils/formatPrice'; // Import the utility function
 
 const InventoryWarnings = ({ lowStockProducts, onRestock, onEdit }) => {
   return (
@@ -24,19 +25,21 @@ const InventoryWarnings = ({ lowStockProducts, onRestock, onEdit }) => {
             <TableRow>
               <TableCell>Product Name</TableCell>
               <TableCell>Stock</TableCell>
+              <TableCell>Price</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {lowStockProducts.map((product) => (
               <TableRow
-                key={product.id}
+                key={product._id}
                 sx={{
-                  backgroundColor: product.stock < 3 ? '#ffebee' : '#fffde7',
+                  backgroundColor: product.quantity < 5 ? '#ffebee' : '#fffde7',
                 }}
               >
                 <TableCell>{product.name}</TableCell>
-                <TableCell>{product.stock}</TableCell>
+                <TableCell>{product.quantity}</TableCell>
+                <TableCell>${formatPrice(product.price)}</TableCell>
                 <TableCell>
                   <Button
                     variant="contained"

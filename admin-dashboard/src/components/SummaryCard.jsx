@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
 
 const SummaryCard = ({ icon, title, value, color }) => {
   const theme = useTheme();
-
+  
   return (
     <Card
       sx={{

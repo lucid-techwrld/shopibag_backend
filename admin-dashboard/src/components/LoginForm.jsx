@@ -43,7 +43,7 @@ const LoginForm = () => {
       login(); // Update authentication state
       navigate('/'); // Navigate to Dashboard
     } catch (error) {
-      toast.error(error.message || 'An error occurred. Please try again.', { position: 'top-right' });
+      toast.error('An error occurred. Please try again.', { position: 'top-right' });
     } finally {
       setLoading(false); // Stop loading animation
     }
