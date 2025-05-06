@@ -1,4 +1,3 @@
-const Products = require('../data/productsData')
 const Product = require('../models/productShcema')
 const supabase = require('../utils/supabaseClient')
 
@@ -18,7 +17,7 @@ const getProductByID = (req, res) => {
     if(!id) {
         return res.json({success: false, message: `Invalid id`})
     } 
-    let matchingProduct = Products.find((product)=> {
+    let matchingProduct = Product.find((product)=> {
         return product.id == Number(id)
     })
 
@@ -34,7 +33,7 @@ const addProduct = async (req, res) => {
     const {category, description, imageUrl, name, price, quantity } = req.body
     const imagePath = imageUrl.split('/').slice(-2).join('/');
 
-    if(!category || !description || !imageUrl || !name || !price || !quantity) {
+    if(!category || !imageUrl || !name || !price || !quantity) {
         await supabase.storage
                     .from('shopibag-product-images')
                     .remove([imagePath]);
@@ -60,4 +59,40 @@ const addProduct = async (req, res) => {
     }
 }
 
-module.exports = {getAllProduct, addProduct, getProductByID};
+
+const getProductCategory = async (req, res) => {
+    const { category } = req.params;
+    console.log(category)
+    if (!category) {
+        return res.json({
+            success: false,
+            msg: 'Please provide a category'
+        });
+    }
+
+    try {
+        const products = await Product.find({ category });
+
+        if (!products || products.length === 0) {
+            return res.json({
+                success: false,
+                msg: `No products found for category: ${category}`
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            products
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            msg: 'Error fetching products',
+            error: error.message
+        });
+    }
+};
+
+
+
+module.exports = {getAllProduct, addProduct, getProductByID, getProductCategory};

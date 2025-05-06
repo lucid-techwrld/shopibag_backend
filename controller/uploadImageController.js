@@ -10,6 +10,7 @@ const uploadImage = async (req, res) => {
     const { path, mimetype, originalname } = req.file;
     const fileBuffer = fs.readFileSync(path);
 
+    // Upload to Supabase Storage
     const { data, error } = await supabase.storage
       .from('shopibag-product-images')
       .upload(`product-images/${Date.now()}-${originalname}`, fileBuffer, {
@@ -18,18 +19,26 @@ const uploadImage = async (req, res) => {
       });
 
     // Delete local temp file
-    fs.unlinkSync(path);
+    try {
+      fs.unlinkSync(path);
+    } catch (err) {
+      console.error('Error deleting temp file:', err.message);
+    }
 
     if (error) {
       console.error('Supabase upload error:', error);
       return res.status(500).json({ error: error.message });
     }
 
-    const { data: publicData } = supabase.storage
-      .from('shopibag-product-images')
-      .getPublicUrl(data.path);
+    if (!data || !data.path) {
+      return res.status(500).json({ error: 'Failed to upload image to Supabase' });
+    }
 
-    res.json({ publicUrl: publicData.publicUrl });
+    // Construct the Public URL manually
+    const publicUrl = `https://dsxqmfvboofjqjrvicwg.supabase.co/storage/v1/object/public/shopibag-product-images/${encodeURIComponent(data.path)}`;
+    
+
+    res.json({ publicUrl });
   } catch (err) {
     console.error('Upload Error:', err);
     res.status(500).json({ error: 'Upload failed on server' });

@@ -9,6 +9,10 @@ const login = async (req, res) => {
     return res.status(401).json({ error: error.message });
   }
 
+  if (!data || !data.session) {
+    return res.status(401).json({ error: 'Invalid login credentials' });
+  }
+
   const token = data.session.access_token;
   const refresh = data.session.refresh_token;
 

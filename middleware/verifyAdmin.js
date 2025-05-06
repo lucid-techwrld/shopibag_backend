@@ -7,6 +7,10 @@ const verifyAdmin = async (req, res, next) => {
     return res.status(401).json({ error: 'Unauthorized: No token provided' });
   }
 
+  if (!process.env.ADMIN_UID) {
+    return res.status(500).json({ error: 'Server misconfiguration: ADMIN_UID is not set' });
+  }
+
   const { data, error } = await supabase.auth.getUser(token);
 
   if (error || !data?.user) {
