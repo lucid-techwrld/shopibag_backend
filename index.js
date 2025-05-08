@@ -10,6 +10,7 @@ const connectDB = require('./config/mongoDB');
 const products = require('./routes/productRoute');
 const uploadImage = require('./routes/uploadImage');
 const adminLogin = require('./routes/adminLoginRouter');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 
@@ -45,6 +46,8 @@ app.use('/api/image/', productLimiter, uploadImage);
 
 // Connect to Database
 connectDB();
+
+app.use(errorHandler); // Error handling middleware
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

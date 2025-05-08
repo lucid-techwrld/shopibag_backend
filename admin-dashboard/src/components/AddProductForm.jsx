@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, TextField, Button, Typography, LinearProgress, IconButton, MenuItem } from '@mui/material';
+import { Box, TextField, Button, Typography, LinearProgress, IconButton, MenuItem, CircularProgress } from '@mui/material';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
@@ -15,12 +15,26 @@ const AddProductForm = ({ onProductAdded }) => {
     quantity: '',
     category: 'men',
   });
+  const [loading, setLoading] = useState(false); // Spinner state
+
+  const resetForm = () => {
+    setProductDetails({
+      name: '',
+      description: '',
+      price: '',
+      quantity: '',
+      category: 'men',
+    });
+    setUploadedImageUrl(null);
+    setUploadProgress(0);
+  };
 
   const handleImageUpload = async (file) => {
     const formData = new FormData();
     formData.append('image', file);
 
     try {
+      setLoading(true); // Show spinner
       const res = await fetch('http://localhost:5000/api/image/upload', {
         method: 'POST',
         body: formData,
@@ -38,17 +52,10 @@ const AddProductForm = ({ onProductAdded }) => {
     } catch (error) {
       console.error('Upload Error:', error.message);
       toast.error('Failed to upload image. Please try again.', { position: 'top-right' });
+      resetForm(); // Reset the form on failure
     } finally {
+      setLoading(false); // Hide spinner
       setUploadProgress(0); // Reset progress bar
-    }
-  };
-
-  const handleDrop = (e) => {
-    e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      setUploadProgress(30); // Simulate progress
-      handleImageUpload(file);
     }
   };
 
@@ -57,12 +64,14 @@ const AddProductForm = ({ onProductAdded }) => {
 
     if (!uploadedImageUrl) {
       toast.error('Please upload an image first.', { position: 'top-right' });
+      resetForm(); // Reset the form if no image is uploaded
       return;
     }
 
     const product = { ...productDetails, imageUrl: uploadedImageUrl };
 
     try {
+      setLoading(true); // Show spinner
       const res = await fetch('http://localhost:5000/api/v1/products/add', {
         method: 'POST',
         headers: {
@@ -78,18 +87,14 @@ const AddProductForm = ({ onProductAdded }) => {
       }
 
       toast.success('Product added successfully!', { position: 'top-right' });
-      setProductDetails({
-        name: '',
-        description: '',
-        price: '',
-        quantity: '',
-        category: 'men',
-      });
-      setUploadedImageUrl(null);
+      resetForm(); // Reset the form on success
       onProductAdded(); // Notify parent component
     } catch (error) {
       console.error('Error uploading product:', error.message);
       toast.error('Failed to add product. Please try again.', { position: 'top-right' });
+      resetForm(); // Reset the form on failure
+    } finally {
+      setLoading(false); // Hide spinner
     }
   };
 
@@ -225,8 +230,8 @@ const AddProductForm = ({ onProductAdded }) => {
         <MenuItem value="bags">Bags</MenuItem>
       </TextField>
 
-      <Button type="submit" variant="contained" color="primary" fullWidth>
-        Add Product
+      <Button type="submit" variant="contained" color="primary" fullWidth disabled={loading}>
+        {loading ? <CircularProgress size={24} sx={{ color: '#fff' }} /> : 'Add Product'}
       </Button>
     </Box>
   );

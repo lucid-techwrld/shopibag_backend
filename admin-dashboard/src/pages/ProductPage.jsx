@@ -16,8 +16,9 @@ import {
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import formatPrice from '../utils/formatPrice';
 
 const ProductPage = () => {
@@ -45,6 +46,7 @@ const ProductPage = () => {
       setFilteredProducts(data.products);
     } catch (error) {
       console.error('Error fetching products:', error.message);
+      toast.error('Failed to fetch products. Please try again.', { position: 'top-right' });
     } finally {
       setLoading(false);
     }
@@ -65,21 +67,34 @@ const ProductPage = () => {
     setFilteredProducts(filtered);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this product?')) {
-      console.log('Delete product with ID:', id);
-      // Implement delete logic here
+      try {
+        const res = await fetch(`http://localhost:5000/api/v1/products/delete/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+        });
+
+        if (!res.ok) {
+          throw new Error('Failed to delete product');
+        }
+
+        const data = await res.json();
+        setProducts(products.filter((product) => product._id !== id));
+        setFilteredProducts(filteredProducts.filter((product) => product._id !== id));
+        toast.success(data.message, { position: 'top-right' });
+      } catch (error) {
+        console.error('Error deleting product:', error.message);
+        toast.error('Failed to delete product. Please try again.', { position: 'top-right' });
+      }
     }
   };
 
   const handleEdit = (id) => {
-    console.log('Edit product with ID:', id);
-    navigate(`/products/edit/${id}`);
-  };
-
-  const handleView = (id) => {
-    console.log('View product with ID:', id);
-    // Implement view logic here
+    navigate(`/product/edit/${id}`);
   };
 
   return (
@@ -147,9 +162,6 @@ const ProductPage = () => {
                   <TableCell>{product.quantity}</TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell>
-                    <IconButton color="primary" onClick={() => handleView(product._id)}>
-                      <VisibilityIcon />
-                    </IconButton>
                     <IconButton color="secondary" onClick={() => handleEdit(product._id)}>
                       <EditIcon />
                     </IconButton>

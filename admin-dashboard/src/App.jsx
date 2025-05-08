@@ -6,6 +6,7 @@ import Dashboard from './pages/dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import Header from './components/Header.jsx';
 import ProductPage from './pages/ProductPage'
+import EditProductPage from './pages/EditProductPage.jsx';
 import { ToastContainer } from 'react-toastify';
 
 function App() {
@@ -35,6 +36,12 @@ function App() {
             <ProductPage />
           </ProtectedRoute>
         } />
+
+        <Route path='/product/edit/:id' element={
+          <ProtectedRoute>
+            <EditProductPage/>
+          </ProtectedRoute>
+        }/>
       </Routes>
       <ToastContainer />
     </Router>

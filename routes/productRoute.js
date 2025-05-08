@@ -5,17 +5,25 @@ const {
   addProduct,
   getProductCategory,
   getProductsQuantity,
-  searchProducts
+  searchProducts,
+  updateProduct,
+  getProductById,
+  deleteProduct,
 } = require('../controller/productController');
-const verifyAdmin = require('../middleware/verifyAdmin'); // Import the middleware
+const verifyAdmin = require('../middleware/verifyAdmin');
 
 // Public Routes
-router.get('/all', getAllProduct);
+router.get('/all', getAllProduct); // Get all products
+router.get('/stocks', getProductsQuantity); // Get total product quantity
+router.get('/search', searchProducts); // Search products
 router.get('/category/:category', getProductCategory);
-router.get('/stocks', getProductsQuantity);
-router.get('/search', searchProducts)
 
 // Protected Routes (Admin Only)
-router.post('/add', verifyAdmin, addProduct); // Add verifyAdmin middleware here
+router.post('/add', verifyAdmin, addProduct); // Add a new product
+router.delete('/delete/:id', verifyAdmin, deleteProduct); // Delete a product (must come before /:id)
+router.patch('/update/:id', verifyAdmin, updateProduct); // Update a product (must come before /:id)
+
+// Dynamic Route (must be last to avoid conflicts)
+router.get('/:id', getProductById); // Get product by ID
 
 module.exports = router;

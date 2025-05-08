@@ -32,9 +32,10 @@ const Dashboard = () => {
       if (!data.success) {
         throw Error(data.msg || 'Something went wrong, please try again!');
       }
+      console.log(data)
       setTotalStocks(data.totalQuantity);
     } catch (error) {
-      console.error(error.msg || 'Something went wrong, please try again later');
+      console.error(error.msg || 'Failed to fetch total stock');
     }
   };
 

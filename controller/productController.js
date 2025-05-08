@@ -1,142 +1,69 @@
 const Product = require('../models/productShcema');
 const supabase = require('../utils/supabaseClient');
-const validator = require('validator'); // For validation
-const sanitizeHtml = require('sanitize-html'); // For sanitization
+const { deleteImageFromSupabase } = require('../utils/supabaseDelete'); // Import the utility function
 
-const getAllProduct = async (req, res) => {
-    try {
-        const products = await Product.find();
-        return res.status(200).json({ success: true, products });
-    } catch (error) {
-        return res.status(500).json({ success: false, msg: error.message });
-    }
-};
-
-
-const addProduct = async (req, res) => {
-    console.log(req.body);
-    const { category, description, imageUrl, name, price, quantity } = req.body;
-    const imagePath = imageUrl.split('/').slice(-2).join('/');
-
-    // Validation
-    if (!category || !imageUrl || !name || !price || !quantity) {
-        await supabase.storage.from('shopibag-product-images').remove([imagePath]);
-        return res.status(400).json({ success: false, message: 'Invalid Credential' });
-    }
-
-    if (!validator.isURL(imageUrl, { protocols: ['http', 'https'], require_protocol: true })) {
-        return res.status(400).json({ success: false, message: 'Invalid image URL' });
-    }
-
-    if (!validator.isNumeric(price.toString()) || price <= 0) {
-        return res.status(400).json({ success: false, message: 'Invalid price' });
-    }
-
-    if (!validator.isInt(quantity.toString(), { min: 1 })) {
-        return res.status(400).json({ success: false, message: 'Invalid quantity' });
-    }
-
-    // Sanitization
-    const sanitizedCategory = sanitizeHtml(category, { allowedTags: [], allowedAttributes: {} });
-    const sanitizedDescription = sanitizeHtml(description, { allowedTags: [], allowedAttributes: {} });
-    const sanitizedName = sanitizeHtml(name, { allowedTags: [], allowedAttributes: {} });
-
-    try {
-        const newProduct = new Product({
-            name: sanitizedName,
-            price,
-            description: sanitizedDescription,
-            quantity,
-            imageUrl,
-            category: sanitizedCategory,
-        });
-        await newProduct.save();
-        return res.status(201).json({ message: 'Product added successfully', newProduct });
-    } catch (error) {
-        console.log(error.message, 'Error uploading product');
-        await supabase.storage.from('shopibag-product-images').remove([imagePath]);
-        return res.status(500).json({ error: 'Failed to save product' });
-    }
-};
-
-const getProductCategory = async (req, res) => {
-    const { category } = req.params;
-    console.log(category);
-
-    if (!category) {
-        return res.status(400).json({
-            success: false,
-            msg: 'Please provide a category',
-        });
-    }
-
-    try {
-        const sanitizedCategory = sanitizeHtml(category, { allowedTags: [], allowedAttributes: {} });
-        const products = await Product.find({ category: sanitizedCategory });
-
-        if (!products || products.length === 0) {
-            return res.status(404).json({
-                success: false,
-                msg: `No products found for category: ${sanitizedCategory}`,
-            });
-        }
-
-        return res.status(200).json({
-            success: true,
-            products,
-        });
-    } catch (error) {
-        return res.status(500).json({
-            success: false,
-            msg: 'Error fetching products',
-            error: error.message,
-        });
-    }
-};
-
-const getProductsQuantity = async (req, res) => {
-    try {
-        const productQuantity = await Product.aggregate([
-            {
-                $group: {
-                    _id: null,
-                    totalQuantity: {
-                        $sum: "$quantity"
-                    }
-                }
-            }
-        ]);
-
-        // Handle empty result
-        return res.status(200).json({
-            success: true,
-            totalQuantity: productQuantity[0]?.totalQuantity || 0,
-        });
-    } catch (error) {
-        console.error('Error occurred:', error.message);
-        return res.status(500).json({
-            success: false,
-            msg: 'Error occurred, please try again later',
-        });
-    }
-};
-
-
-
-const searchProducts = async (req, res) => {
+const getAllProduct = async (req, res, next) => {
   try {
-    // Get the query from the request
-    let query = req.query.query || '';
+    const products = await Product.find();
+    res.status(200).json({ success: true, products });
+  } catch (error) {
+    next(error); // Pass the error to the error handler middleware
+  }
+};
 
-    // Validate that the query is a string
-    if (!validator.isAscii(query)) {
-      return res.status(400).json({ success: false, message: 'Invalid query format' });
+const addProduct = async (req, res, next) => {
+  const { imageUrl } = req.body;
+  const imagePath = imageUrl?.split('/').slice(-2).join('/');
+
+  try {
+    const newProduct = new Product(req.body); // Schema handles validation and sanitization
+    await newProduct.save();
+    res.status(201).json({ success: true, message: 'Product added successfully', newProduct });
+  } catch (error) {
+    if (imagePath) {
+      await deleteImageFromSupabase(imagePath); // Use the utility function
     }
+    next(error); // Pass the error to the error handler middleware
+  }
+};
 
-    // Sanitize the query to remove any malicious content
-    query = sanitizeHtml(query, { allowedTags: [], allowedAttributes: {} }).toLowerCase();
+const getProductCategory = async (req, res, next) => {
+  const { category } = req.params;
 
-    // Search for products by name or category
+  try {
+    const products = await Product.find({ category });
+    if (!products || products.length === 0) {
+      return res.status(404).json({ success: false, message: `No products found for category: ${category}` });
+    }
+    res.status(200).json({ success: true, products });
+  } catch (error) {
+    next(error); // Pass the error to the error handler middleware
+  }
+};
+
+const getProductsQuantity = async (req, res, next) => {
+  try {
+    const productQuantity = await Product.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalQuantity: { $sum: '$quantity' },
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      success: true,
+      totalQuantity: productQuantity[0]?.totalQuantity || 0,
+    });
+  } catch (error) {
+    next(error); // Pass the error to the error handler middleware
+  }
+};
+
+const searchProducts = async (req, res, next) => {
+  try {
+    const query = req.query.query?.toLowerCase() || '';
     const products = await Product.find({
       $or: [
         { name: { $regex: query, $options: 'i' } },
@@ -146,8 +73,75 @@ const searchProducts = async (req, res) => {
 
     res.status(200).json({ success: true, products });
   } catch (error) {
-    res.status(500).json({ success: false, message: 'Error searching products', error: error.message });
+    next(error); // Pass the error to the error handler middleware
   }
 };
 
-module.exports = { getAllProduct, addProduct, getProductCategory, getProductsQuantity, searchProducts };
+const updateProduct = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const updatedProduct = await Product.findByIdAndUpdate(id, req.body, {
+      new: true,
+      runValidators: true, // Ensure schema validation is applied
+    });
+
+    if (!updatedProduct) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    res.status(200).json({ success: true, message: 'Product updated successfully', updatedProduct });
+  } catch (error) {
+    next(error); // Pass the error to the error handler middleware
+  }
+};
+
+const getProductById = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findOne({ _id: id });
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+    return res.status(200).json({ success: true, product });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteProduct = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const product = await Product.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    const imagePath = product.imageUrl?.split('/').slice(-2).join('/');
+
+    // Delete the product from the database
+    await Product.findByIdAndDelete(id);
+
+    // Delete the image from Supabase
+    if (imagePath) {
+      await deleteImageFromSupabase(imagePath);
+    }
+
+    res.status(200).json({ success: true, message: 'Product deleted successfully' });
+  } catch (error) {
+    next(error); // Pass the error to the error handler middleware
+  }
+};
+
+module.exports = {
+  getAllProduct,
+  addProduct,
+  getProductCategory,
+  getProductsQuantity,
+  searchProducts,
+  updateProduct,
+  getProductById,
+  deleteProduct,
+};
