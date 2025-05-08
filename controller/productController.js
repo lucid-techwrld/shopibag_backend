@@ -122,7 +122,7 @@ const deleteProduct = async (req, res, next) => {
     const imagePath = product.imageUrl?.split('/').slice(-2).join('/');
 
     // Delete the product from the database
-    await Product.findByIdAndDelete(id);
+    await Product.findByIdAndDelete(id, { runValidators: true }); // Added runValidators here
 
     // Delete the image from Supabase
     if (imagePath) {

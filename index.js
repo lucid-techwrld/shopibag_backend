@@ -9,12 +9,14 @@ const rateLimit = require('express-rate-limit'); // Import express-rate-limit
 const connectDB = require('./config/mongoDB');
 const products = require('./routes/productRoute');
 const uploadImage = require('./routes/uploadImage');
-const adminLogin = require('./routes/adminLoginRouter');
+const adminLogin = require('./routes/adminRoute');
 const errorHandler = require('./middleware/errorHandler');
+const auth = require('./routes/authenticationRoute')
 
 const app = express();
 
 // Middleware
+
 app.use(helmet()); // Use helmet for security headers
 app.use(cors({
   origin: ['http://localhost:5173', 'http://localhost:4000'], // Allow requests from your React app
@@ -38,8 +40,10 @@ const productLimiter = rateLimit({
 });
 
 // Routes with Rate Limiting
-app.use('/admin', loginLimiter, adminLogin); // Apply login rate limiter
-app.use('/api/v1/products', productLimiter, products); // Apply product rate limiter
+app.use('/auth', loginLimiter, adminLogin); 
+app.use('/api/v1/auth', loginLimiter, auth);
+app.use('/api/v1/products', productLimiter, products); 
+
 
 // Other Routes
 app.use('/api/image/', productLimiter, uploadImage);

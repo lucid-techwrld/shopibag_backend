@@ -37,6 +37,19 @@ const login = async (req, res) => {
   res.json({ message: 'Login successful' });
 }
 
+const logout = async (req, res) => {
+  const { error } = await supabase.auth.signOut();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.clearCookie('sb-token');
+  res.clearCookie('sb-refresh-token');
+
+  res.json({ message: 'Logout successful' });
+}
 module.exports = {
   login,
+  logout
 };

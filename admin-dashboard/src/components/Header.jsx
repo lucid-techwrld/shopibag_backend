@@ -11,7 +11,8 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 
 const navLinks = [
   { label: 'Dashboard', path: '/' },
@@ -24,12 +25,33 @@ const navLinks = [
 const Header = () => {
   const [anchorEl, setAnchorEl] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
   };
   const handleMenuClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    try {
+      const res = await fetch('http://localhost:5000/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success(data.message, { position: 'top-right' });
+        navigate('/login'); // Redirect to login page
+      } else {
+        toast.error(data.message || 'Logout failed', { position: 'top-right' });
+      }
+    } catch (error) {
+      console.error('Logout Error:', error.message);
+      toast.error('An error occurred. Please try again.', { position: 'top-right' });
+    }
   };
 
   const isActive = (path) => location.pathname === path;
@@ -81,7 +103,7 @@ const Header = () => {
               {item.label}
             </Button>
           ))}
-          <Button color="inherit">Logout</Button>
+          <Button color="inherit" onClick={handleLogout}>Logout</Button>
         </Box>
 
         {/* Mobile Menu Icon */}
@@ -121,7 +143,10 @@ const Header = () => {
               {item.label}
             </MenuItem>
           ))}
-          <MenuItem onClick={handleMenuClose}>Logout</MenuItem>
+          <MenuItem onClick={() => {
+            handleMenuClose();
+            handleLogout();
+          }}>Logout</MenuItem>
         </Menu>
 
         {/* Profile Icon */}
