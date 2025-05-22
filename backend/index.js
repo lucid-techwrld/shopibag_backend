@@ -21,6 +21,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "https://shopibag-store.onrender.com",
       "https://shopibag-admin.onrender.com",
       "http://localhost:4000",
     ],
