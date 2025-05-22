@@ -1,7 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { Box, TextField, Button, Typography, CircularProgress, MenuItem } from '@mui/material';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+import React, { useState, useEffect } from "react";
+import {
+  Box,
+  TextField,
+  Button,
+  Typography,
+  CircularProgress,
+  MenuItem,
+} from "@mui/material";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const EditProductPage = () => {
   const { id } = useParams(); // Get product ID from URL
@@ -13,15 +20,19 @@ const EditProductPage = () => {
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`http://localhost:5000/api/v1/products/${id}`);
+        const res = await fetch(
+          `${import.meta.env.VITE_API_BASE_URL}/api/v1/products/${id}`
+        );
         if (!res.ok) {
-          throw new Error('Failed to fetch product details');
+          throw new Error("Failed to fetch product details");
         }
         const data = await res.json();
         setProductDetails(data.product);
       } catch (error) {
-        console.error('Error fetching product:', error.message);
-        toast.error('Failed to load product details.', { position: 'top-right' });
+        console.error("Error fetching product:", error.message);
+        toast.error("Failed to load product details.", {
+          position: "top-right",
+        });
       } finally {
         setLoading(false);
       }
@@ -35,30 +46,42 @@ const EditProductPage = () => {
     e.preventDefault();
 
     try {
-      const res = await fetch(`http://localhost:5000/api/v1/products/update/${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify(productDetails),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/api/v1/products/update/${id}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify(productDetails),
+        }
+      );
 
       if (!res.ok) {
-        throw new Error('Failed to update product');
+        throw new Error("Failed to update product");
       }
 
-      toast.success('Product updated successfully!', { position: 'top-right' });
-      navigate('/products'); // Redirect to product list
+      toast.success("Product updated successfully!", { position: "top-right" });
+      navigate("/products"); // Redirect to product list
     } catch (error) {
-      console.error('Error updating product:', error.message);
-      toast.error('Failed to update product. Please try again.', { position: 'top-right' });
+      console.error("Error updating product:", error.message);
+      toast.error("Failed to update product. Please try again.", {
+        position: "top-right",
+      });
     }
   };
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <CircularProgress />
       </Box>
     );
@@ -77,17 +100,17 @@ const EditProductPage = () => {
       component="form"
       onSubmit={handleSubmit}
       sx={{
-        display: 'flex',
-        flexDirection: 'column',
+        display: "flex",
+        flexDirection: "column",
         gap: 3,
-        width: '100%',
+        width: "100%",
         maxWidth: 600,
-        margin: 'auto',
+        margin: "auto",
         mt: 5,
         p: 3,
         boxShadow: 3,
         borderRadius: 2,
-        backgroundColor: '#fff',
+        backgroundColor: "#fff",
       }}
     >
       <Typography variant="h5" fontWeight="bold" textAlign="center">
@@ -97,14 +120,18 @@ const EditProductPage = () => {
       <TextField
         label="Product Name"
         value={productDetails.name}
-        onChange={(e) => setProductDetails({ ...productDetails, name: e.target.value })}
+        onChange={(e) =>
+          setProductDetails({ ...productDetails, name: e.target.value })
+        }
         required
         fullWidth
       />
       <TextField
         label="Description"
         value={productDetails.description}
-        onChange={(e) => setProductDetails({ ...productDetails, description: e.target.value })}
+        onChange={(e) =>
+          setProductDetails({ ...productDetails, description: e.target.value })
+        }
         multiline
         rows={3}
         fullWidth
@@ -113,7 +140,9 @@ const EditProductPage = () => {
         label="Price"
         type="number"
         value={productDetails.price}
-        onChange={(e) => setProductDetails({ ...productDetails, price: e.target.value })}
+        onChange={(e) =>
+          setProductDetails({ ...productDetails, price: e.target.value })
+        }
         required
         fullWidth
       />
@@ -121,7 +150,9 @@ const EditProductPage = () => {
         label="Quantity"
         type="number"
         value={productDetails.quantity}
-        onChange={(e) => setProductDetails({ ...productDetails, quantity: e.target.value })}
+        onChange={(e) =>
+          setProductDetails({ ...productDetails, quantity: e.target.value })
+        }
         required
         fullWidth
       />
@@ -129,7 +160,9 @@ const EditProductPage = () => {
         label="Category"
         select
         value={productDetails.category}
-        onChange={(e) => setProductDetails({ ...productDetails, category: e.target.value })}
+        onChange={(e) =>
+          setProductDetails({ ...productDetails, category: e.target.value })
+        }
         fullWidth
       >
         <MenuItem value="men">Men</MenuItem>

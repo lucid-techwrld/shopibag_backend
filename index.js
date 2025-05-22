@@ -35,19 +35,12 @@ const loginLimiter = rateLimit({
     "Too many login attempts from this IP, please try again after a minute.",
 });
 
-const productLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 150, // Limit each IP to 150 requests per windowMs
-  message:
-    "Too many requests to the product API, please try again after 15 minutes.",
-});
-
 app.use("/auth", loginLimiter, adminLogin);
 app.use("/api/v1/auth", loginLimiter, userAuth);
-app.use("/api/v1/products", productLimiter, products);
-app.use("/api/v1", productLimiter, cartRoute);
+app.use("/api/v1/products", products);
+app.use("/api/v1", cartRoute);
 
-app.use("/api/image/", productLimiter, uploadImage);
+app.use("/api/image/", uploadImage);
 
 connectDB();
 

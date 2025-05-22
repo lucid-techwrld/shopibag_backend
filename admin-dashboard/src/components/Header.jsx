@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   AppBar,
   Toolbar,
@@ -8,18 +8,18 @@ import {
   MenuItem,
   Box,
   Button,
-} from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
+} from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const navLinks = [
-  { label: 'Dashboard', path: '/' },
-  { label: 'Products', path: '/products' },
-  { label: 'Orders', path: '/orders' },
-  { label: 'Users', path: '/users' },
-  { label: 'Add Product', path: '/add-product' },
+  { label: "Dashboard", path: "/" },
+  { label: "Products", path: "/products" },
+  { label: "Orders", path: "/orders" },
+  { label: "Users", path: "/users" },
+  { label: "Add Product", path: "/add-product" },
 ];
 
 const Header = () => {
@@ -36,21 +36,26 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch('http://localhost:5000/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_API_BASE_URL}/auth/logout`,
+        {
+          method: "POST",
+          credentials: "include",
+        }
+      );
 
       const data = await res.json();
       if (res.ok) {
-        toast.success(data.message, { position: 'top-right' });
-        navigate('/login'); // Redirect to login page
+        toast.success(data.message, { position: "top-right" });
+        navigate("/login"); // Redirect to login page
       } else {
-        toast.error(data.message || 'Logout failed', { position: 'top-right' });
+        toast.error(data.message || "Logout failed", { position: "top-right" });
       }
     } catch (error) {
-      console.error('Logout Error:', error.message);
-      toast.error('An error occurred. Please try again.', { position: 'top-right' });
+      console.error("Logout Error:", error.message);
+      toast.error("An error occurred. Please try again.", {
+        position: "top-right",
+      });
     }
   };
 
@@ -61,10 +66,10 @@ const Header = () => {
       position="sticky"
       elevation={4}
       sx={{
-        background: 'linear-gradient(135deg, #1976d2, #1565c0)',
+        background: "linear-gradient(135deg, #1976d2, #1565c0)",
       }}
     >
-      <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
+      <Toolbar sx={{ display: "flex", justifyContent: "space-between" }}>
         {/* Logo */}
         <Typography
           variant="h6"
@@ -72,9 +77,9 @@ const Header = () => {
           component={Link}
           to="/"
           sx={{
-            color: '#fff',
-            textDecoration: 'none',
-            fontWeight: 'bold',
+            color: "#fff",
+            textDecoration: "none",
+            fontWeight: "bold",
             letterSpacing: 1,
           }}
         >
@@ -82,32 +87,36 @@ const Header = () => {
         </Typography>
 
         {/* Desktop Navigation */}
-        <Box sx={{ display: { xs: 'none', md: 'flex' }, gap: 2 }}>
+        <Box sx={{ display: { xs: "none", md: "flex" }, gap: 2 }}>
           {navLinks.map((item) => (
             <Button
               key={item.path}
               component={Link}
               to={item.path}
               sx={{
-                color: isActive(item.path) ? '#fff' : 'rgba(255,255,255,0.8)',
+                color: isActive(item.path) ? "#fff" : "rgba(255,255,255,0.8)",
                 fontWeight: isActive(item.path) ? 700 : 400,
-                borderBottom: isActive(item.path) ? '2px solid #fff' : '2px solid transparent',
+                borderBottom: isActive(item.path)
+                  ? "2px solid #fff"
+                  : "2px solid transparent",
                 borderRadius: 0,
-                transition: 'all 0.2s',
-                '&:hover': {
-                  color: '#fff',
-                  borderBottom: '2px solid #fff',
+                transition: "all 0.2s",
+                "&:hover": {
+                  color: "#fff",
+                  borderBottom: "2px solid #fff",
                 },
               }}
             >
               {item.label}
             </Button>
           ))}
-          <Button color="inherit" onClick={handleLogout}>Logout</Button>
+          <Button color="inherit" onClick={handleLogout}>
+            Logout
+          </Button>
         </Box>
 
         {/* Mobile Menu Icon */}
-        <Box sx={{ display: { xs: 'flex', md: 'none' } }}>
+        <Box sx={{ display: { xs: "flex", md: "none" } }}>
           <IconButton
             size="large"
             edge="start"
@@ -124,12 +133,12 @@ const Header = () => {
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
           anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right',
+            vertical: "bottom",
+            horizontal: "right",
           }}
           transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right',
+            vertical: "top",
+            horizontal: "right",
           }}
         >
           {navLinks.map((item) => (
@@ -143,10 +152,14 @@ const Header = () => {
               {item.label}
             </MenuItem>
           ))}
-          <MenuItem onClick={() => {
-            handleMenuClose();
-            handleLogout();
-          }}>Logout</MenuItem>
+          <MenuItem
+            onClick={() => {
+              handleMenuClose();
+              handleLogout();
+            }}
+          >
+            Logout
+          </MenuItem>
         </Menu>
 
         {/* Profile Icon */}
