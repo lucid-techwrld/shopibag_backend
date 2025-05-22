@@ -117,6 +117,17 @@ const AddProductForm = ({ onProductAdded }) => {
     }
   };
 
+  const handleDrop = (event) => {
+  event.preventDefault();
+
+  const file = event.dataTransfer.files[0];
+  if (file) {
+    setUploadProgress(30);
+    handleImageUpload(file);
+  }
+};
+
+
   return (
     <Box
       component="form"
