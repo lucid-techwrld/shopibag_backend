@@ -19,7 +19,11 @@ const app = express();
 app.use(helmet());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "http://localhost:4000"],
+    origin: [
+      "http://localhost:5173",
+      "https://shopibag-admin.onrender.com",
+      "http://localhost:4000",
+    ],
     credentials: true,
   })
 );
